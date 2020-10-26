@@ -1,6 +1,4 @@
 #include "pch.h"
-#include <iostream>
-#include <vector>
 #include <Windows.h>
 
 bool Detour(void* hookAddr, void* func, int numBytes)
