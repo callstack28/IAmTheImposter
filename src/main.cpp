@@ -1,4 +1,6 @@
 #include "pch.h"
+#include <iostream>
+#include <vector>
 #include <Windows.h>
 
 bool Detour(void* hookAddr, void* func, int numBytes)
@@ -65,20 +67,7 @@ DWORD WINAPI gthread(LPVOID param)
 
 
 
-BOOL APIENTRY DllMain(HMODULE hModule,
-    DWORD  ul_reason_for_call,
-    LPVOID lpReserved
-)
-{
-    switch (ul_reason_for_call)
-    {
-    case DLL_PROCESS_ATTACH:
-    {
-        CreateThread(NULL, NULL, gthread, hModule, NULL, NULL);
-    }
-    case DLL_PROCESS_DETACH:
-        break;
-    }
-    return TRUE;
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
+    if (reason == DLL_PROCESS_ATTACH)
+        CreateThread(0, 4096, &gthread, 0, 0, NULL);
 }
-
