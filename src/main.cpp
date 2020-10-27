@@ -57,7 +57,24 @@ DWORD WINAPI gthread(LPVOID param)
 
     jumpBackAddr = hookAddr + numBytes;
 
-    Detour((void*)hookAddr, func, numBytes);
+    if (Detour((void*)hookAddr, func, numBytes))
+        MessageBoxA(NULL, "hooked!", "Success!", NULL);
+    else
+        MessageBoxA(NULL, "hook failed!", "Failed!", NULL);
+
+
+    while (true)
+    {
+        if (GetAsyncKeyState(VK_END))
+        {
+            break;
+        }
+
+        Sleep(100);
+    }
+
+    MessageBoxA(NULL, "See you next time!", "Exitting!", NULL);
+    FreeLibraryAndExitThread((HMODULE)param, NULL);
 
     return 0;
 }
@@ -67,5 +84,5 @@ DWORD WINAPI gthread(LPVOID param)
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
     if (reason == DLL_PROCESS_ATTACH)
-        CreateThread(0, 4096, &gthread, 0, 0, NULL);
+        CreateThread(NULL, 4096, &gthread, NULL, NULL, NULL);
 }
