@@ -84,5 +84,17 @@ DWORD WINAPI gthread(LPVOID param)
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
     if (reason == DLL_PROCESS_ATTACH)
-        CreateThread(NULL, 4096, &gthread, NULL, NULL, NULL);
+    {
+        // process check
+        if (GetModuleHandleA("Among Us.exe") == nullptr)
+        {
+            MessageBoxA(nullptr, ("this cannot be injected in another process\nopen <Among Us.exe> to inject."), MB_OK, MB_OKCANCEL);
+            return false;
+        }
+
+        // disable DLL_THREAD_ATTACH_DETACH reasons to call
+        DisableThreadLibraryCalls(hModule);
+
+        CreateThread(NULL, 4096, &gthread, 0, 0, 0);
+    }
 }
