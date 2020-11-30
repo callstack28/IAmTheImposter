@@ -1,5 +1,7 @@
-#include "pch.h"
 #include <Windows.h>
+#include <iostream>
+
+using namespace std;
 
 bool Detour(void* hookAddr, void* func, int numBytes)
 {
@@ -50,6 +52,14 @@ void __declspec(naked) func()
 
 DWORD WINAPI gthread(LPVOID param)
 {
+    AllocConsole();
+    FILE *f;
+    freopen_s(&f, "CONOUT$", "w", stdout);
+
+    cout << "Is this thing on?" << endl;
+
+
+
     DWORD moduleBaseAddr = (DWORD)GetModuleHandleA("GameAssembly.dll");
     DWORD hookAddr = moduleBaseAddr + 0x88C47A;
 
@@ -65,7 +75,7 @@ DWORD WINAPI gthread(LPVOID param)
 
     while (true)
     {
-        if (GetAsyncKeyState(VK_END))
+        if (GetAsyncKeyState(VK_END) & 1)
         {
             break;
         }
@@ -75,8 +85,9 @@ DWORD WINAPI gthread(LPVOID param)
 
     MessageBoxA(NULL, "See you next time!", "Exitting!", NULL);
     FreeLibraryAndExitThread((HMODULE)param, NULL);
+    fclose(f);
+    FreeConsole();
 
-    return 0;
 }
 
 
@@ -85,7 +96,7 @@ DWORD WINAPI gthread(LPVOID param)
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
     if (reason == DLL_PROCESS_ATTACH)
     {
-        // process check
+        // quick process check
         if (GetModuleHandleA("Among Us.exe") == nullptr)
         {
             MessageBoxA(nullptr, ("this cannot be injected in another process\nopen <Among Us.exe> to inject."), MB_OK, MB_OKCANCEL);
