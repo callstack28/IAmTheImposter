@@ -1,7 +1,29 @@
 #include <Windows.h>
 #include <iostream>
+#include <string>
 
 using namespace std;
+HWND window = NULL;
+
+BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
+{
+    DWORD wndProcID;
+    GetWindowThreadProcessId(handle, &wndProcID);
+
+    if (GetCurrentProcessId() != wndProcID)
+    {
+        return TRUE;
+    }
+
+    window = handle;
+    return FALSE;
+}
+
+HWND GetProcessWindow()
+{
+    EnumWindows(EnumWindowsCallback, NULL);
+    return window;
+}
 
 bool Detour(void* hookAddr, void* func, int numBytes)
 {
@@ -33,7 +55,6 @@ bool Detour(void* hookAddr, void* func, int numBytes)
 }
 
 DWORD jumpBackAddr;
-
 void __declspec(naked) func()
 {
     __asm
@@ -59,7 +80,6 @@ DWORD WINAPI gthread(LPVOID param)
     cout << "Is this thing on?" << endl;
 
 
-
     DWORD moduleBaseAddr = (DWORD)GetModuleHandleA("GameAssembly.dll");
     DWORD hookAddr = moduleBaseAddr + 0x88C47A;
 
@@ -73,13 +93,9 @@ DWORD WINAPI gthread(LPVOID param)
         MessageBoxA(NULL, "hook failed!", "Failed!", NULL);
 
 
-    while (true)
-    {
-        if (GetAsyncKeyState(VK_END) & 1)
-        {
-            break;
-        }
-
+    while (true) {
+        if (GetAsyncKeyState(VK_ESCAPE)) break;
+        FreeLibraryAndExitThread((HMODULE)param, NULL);
         Sleep(100);
     }
 
@@ -87,7 +103,7 @@ DWORD WINAPI gthread(LPVOID param)
     FreeLibraryAndExitThread((HMODULE)param, NULL);
     fclose(f);
     FreeConsole();
-
+    return 0;
 }
 
 
