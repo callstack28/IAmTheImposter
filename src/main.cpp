@@ -68,9 +68,6 @@ void __declspec(naked) func()
 }
 
 
-
-
-
 DWORD WINAPI gthread(LPVOID param)
 {
     AllocConsole();
@@ -122,6 +119,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
         // disable DLL_THREAD_ATTACH_DETACH reasons to call
         DisableThreadLibraryCalls(hModule);
 
-        CreateThread(NULL, 4096, &gthread, 0, 0, 0);
+        CreateThread(NULL, 0, &gthread, 0, 0, 0);
     }
 }
