@@ -27,31 +27,26 @@ HWND GetProcessWindow()
 
 bool Detour(void* hookAddr, void* func, int numBytes)
 {
-    if (numBytes < 5)
-    {
+    if (numBytes < 5) {
         MessageBoxA(NULL, "5 bytes were not detected!", "Error", NULL);
-        return 1;
+        return false;
     }
-    else
-    {
-        DWORD protAddr;
 
-        VirtualProtect(hookAddr, numBytes, PAGE_EXECUTE_READWRITE, &protAddr);
+    DWORD curProtection;
+    VirtualProtect(hookAddr, numBytes, PAGE_EXECUTE_READWRITE, &curProtection);
 
-        memset(hookAddr, 0x90, numBytes);
+    memset(hookAddr, 0x90, numBytes);
 
-        DWORD diff((DWORD)func - (DWORD)hookAddr);
-        DWORD relaAddr = diff - 5;
+    DWORD diff((DWORD)func - (DWORD)hookAddr);
+    DWORD relaAddr = diff - 5;
 
-        *(BYTE*)hookAddr = 0xE9;
-        *(DWORD*)((DWORD)hookAddr + 1) = relaAddr;
+    *(BYTE*)hookAddr = 0xE9;
+    *(DWORD*)((DWORD)hookAddr + 1) = relaAddr;
 
-        DWORD junk;
+    DWORD temp;
+    VirtualProtect(hookAddr, numBytes, curProtection, &temp);
 
-        VirtualProtect(hookAddr, numBytes, protAddr, &junk);
-
-        return true;
-    }
+    return true;
 }
 
 DWORD jumpBackAddr;
@@ -78,6 +73,7 @@ DWORD WINAPI gthread(LPVOID param)
 
 
     DWORD moduleBaseAddr = (DWORD)GetModuleHandleA("GameAssembly.dll");
+    moduleBaseAddr = (uintptr_t)GetModuleHandle(NULL);
     DWORD hookAddr = moduleBaseAddr + 0x88C47A;
 
     int numBytes = 5;
