@@ -92,7 +92,7 @@ DWORD WINAPI gthread(LPVOID param)
         Sleep(100);
     }
 
-    MessageBoxA(NULL, "See you next time!", "Exitting!", NULL);
+    MessageBoxA(NULL, "See you next time!", "Exiting!", NULL);
     FreeLibraryAndExitThread((HMODULE)param, NULL);
     fclose(f);
     FreeConsole();
