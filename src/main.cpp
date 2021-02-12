@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <string>
+#include "sanity.cpp"
 
 using namespace std;
 HWND window = NULL;
@@ -62,7 +63,6 @@ void __declspec(naked) func()
     }
 }
 
-
 DWORD WINAPI gthread(LPVOID param)
 {
     AllocConsole();
@@ -71,10 +71,43 @@ DWORD WINAPI gthread(LPVOID param)
 
     cout << "Is this thing on?" << endl;
 
-
     DWORD moduleBaseAddr = (DWORD)GetModuleHandleA("GameAssembly.dll");
     moduleBaseAddr = (uintptr_t)GetModuleHandle(NULL);
     DWORD hookAddr = moduleBaseAddr + 0x88C47A;
+
+    printFPS();
+
+    // Initial function that we will use to read the printFPS function which defaults to a stream input maintaing a read buffer.
+    cout << "Reading functions...\n";
+
+    string fpsstring;
+    getline(cin, fpsstring);
+    cout << fpsstring;
+
+    cout << "\n";
+
+    // reverse the input stream by the length of the read string (+1 for the newline)
+    for (int i = 0; i <= fpsstring.length(); i++)
+    {
+        cin.unget();
+    }
+
+    string fpsstring2;
+    getline(cin, fpsstring2);
+    float fpsInt = 30;
+
+    if (fpsstring2 != fpsInt)
+    {
+        cout << "great!" << endl;
+    }
+    else
+    {
+        MessageBoxA(NULL, "FPS detrimental!", "Exiting!", NULL);
+        FreeLibraryAndExitThread((HMODULE)param, NULL);
+        fclose(f);
+        FreeConsole();
+        return 0;
+    }
 
     int numBytes = 5;
 
