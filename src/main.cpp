@@ -63,7 +63,7 @@ void __declspec(naked) func()
     }
 }
 
-DWORD WINAPI gthread(LPVOID param)
+void __stdcall gthread(HMODULE hModule)
 {
     AllocConsole();
     FILE *f;
@@ -71,43 +71,34 @@ DWORD WINAPI gthread(LPVOID param)
 
     cout << "Is this thing on?" << endl;
 
-    DWORD moduleBaseAddr = (DWORD)GetModuleHandleA("GameAssembly.dll");
-    moduleBaseAddr = (uintptr_t)GetModuleHandle(NULL);
+    DWORD moduleBaseAddr;
     DWORD hookAddr = moduleBaseAddr + 0x88C47A;
+    DWORD PEB;
 
-    printFPS();
-
-    // Initial function that we will use to read the printFPS function which defaults to a stream input maintaing a read buffer.
-    cout << "Reading functions...\n";
-
-    string fpsstring;
-    getline(cin, fpsstring);
-    cout << fpsstring;
-
-    cout << "\n";
-
-    // reverse the input stream by the length of the read string (+1 for the newline)
-    for (int i = 0; i <= fpsstring.length(); i++)
+    __asm __volatile
     {
-        cin.unget();
+        push esi
+
+        xor esi, esi
+
+        mov esi, FS : [0x30]
+
+        mov PEB, esi
+
+        lea esi, [esi]
+
+        add esi, 0x8
+
+        mov esi, [esi]
+
+        mov moduleBaseAddr, esi
+
+        pop esi
     }
 
-    string fpsstring2;
-    getline(cin, fpsstring2);
-    float fpsInt = 30;
+    std::cout << std::hex << PEB << std::endl;
 
-    if (fpsstring2 != fpsInt)
-    {
-        cout << "great!" << endl;
-    }
-    else
-    {
-        MessageBoxA(NULL, "FPS detrimental!", "Exiting!", NULL);
-        FreeLibraryAndExitThread((HMODULE)param, NULL);
-        fclose(f);
-        FreeConsole();
-        return 0;
-    }
+
 
     int numBytes = 5;
 
@@ -121,15 +112,15 @@ DWORD WINAPI gthread(LPVOID param)
 
     while (true) {
         if (GetAsyncKeyState(VK_ESCAPE)) break;
-        FreeLibraryAndExitThread((HMODULE)param, NULL);
+        FreeLibraryAndExitThread((HMODULE)hModule, NULL);
         Sleep(100);
     }
 
     MessageBoxA(NULL, "See you next time!", "Exiting!", NULL);
-    FreeLibraryAndExitThread((HMODULE)param, NULL);
+    system("pause");
+    FreeLibraryAndExitThread((HMODULE)hModule, NULL);
     fclose(f);
     FreeConsole();
-    return 0;
 }
 
 
@@ -148,6 +139,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
         // disable DLL_THREAD_ATTACH_DETACH reasons to call
         DisableThreadLibraryCalls(hModule);
 
-        CreateThread(NULL, 0, &gthread, 0, 0, 0);
+        switch (reason)
+        {
+        case DLL_PROCESS_ATTACH:
+            CreateThread(NULL, NULL, (LPTHREAD_START_ROUTINE)gthread, hModule, NULL, NULL);
+        case DLL_PROCESS_DETACH:
+            break;
     }
+    return TRUE;
 }
