@@ -1,9 +1,9 @@
 #include <Windows.h>
 #include <iostream>
 #include <string>
-#include "sanity.cpp"
 
 using namespace std;
+
 HWND window = NULL;
 
 BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
@@ -99,7 +99,6 @@ void __stdcall gthread(HMODULE hModule)
     std::cout << std::hex << PEB << std::endl;
 
 
-
     int numBytes = 5;
 
     jumpBackAddr = hookAddr + numBytes;
@@ -122,9 +121,6 @@ void __stdcall gthread(HMODULE hModule)
     fclose(f);
     FreeConsole();
 }
-
-
-
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD reason, LPVOID lpReserved) {
     if (reason == DLL_PROCESS_ATTACH)
