@@ -4,28 +4,6 @@
 
 using namespace std;
 
-HWND window = NULL;
-
-BOOL CALLBACK EnumWindowsCallback(HWND handle, LPARAM lParam)
-{
-    DWORD wndProcID;
-    GetWindowThreadProcessId(handle, &wndProcID);
-
-    if (GetCurrentProcessId() != wndProcID)
-    {
-        return TRUE;
-    }
-
-    window = handle;
-    return FALSE;
-}
-
-HWND GetProcessWindow()
-{
-    EnumWindows(EnumWindowsCallback, NULL);
-    return window;
-}
-
 bool Detour(void* hookAddr, void* func, int numBytes)
 {
     if (numBytes < 5) {
